@@ -1,12 +1,30 @@
-import React from 'react';
-
+import React, { useEffect, useState } from 'react';
 import './CreatePoint.css';
-
 import logo from '../../assets/logo.svg';
 import { Link } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
+import {TileLayer, Marker, MapContainer } from 'react-leaflet';
+import api from '../../services/api';
+
+interface Items {
+  id: number;
+  title: string;
+  image_url: string;
+}
 
 const CreatePoint: React.FC = () => {
+  const [items, setItems] = useState<Items[]>([]);
+
+  useEffect(() => {
+    async function getItems() {
+      const response = await api.get('/items');
+
+      setItems(response.data);
+    }
+
+    getItems();
+  }, [])
+
   return (
     <div id="page-create-point">
       <header>
@@ -60,6 +78,17 @@ const CreatePoint: React.FC = () => {
             <span>Selecione o endereço no mapa</span>
           </legend>
 
+          <MapContainer center={[-15.7821138, -47.9317159]} zoom={15}>
+            <TileLayer
+              attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+
+            <Marker 
+              position={[-15.7821138, -47.9317159]}
+            />
+          </MapContainer>
+
           <div className="field-group">
             <div className="field">
               <label htmlFor="uf">Estado (UF)</label>
@@ -83,30 +112,12 @@ const CreatePoint: React.FC = () => {
           </legend>
 
           <ul className="items-grid">
-            <li>
-              <img src="http://localhost:3333/uploads/oleo.svg" alt="Teste" />
-              <span>Óleo de Cozinha</span>
-            </li>
-            <li>
-              <img src="http://localhost:3333/uploads/oleo.svg" alt="Teste" />
-              <span>Óleo de Cozinha</span>
-            </li>
-            <li>
-              <img src="http://localhost:3333/uploads/oleo.svg" alt="Teste" />
-              <span>Óleo de Cozinha</span>
-            </li>
-            <li>
-              <img src="http://localhost:3333/uploads/oleo.svg" alt="Teste" />
-              <span>Óleo de Cozinha</span>
-            </li>
-            <li>
-              <img src="http://localhost:3333/uploads/oleo.svg" alt="Teste" />
-              <span>Óleo de Cozinha</span>
-            </li>
-            <li>
-              <img src="http://localhost:3333/uploads/oleo.svg" alt="Teste" />
-              <span>Óleo de Cozinha</span>
-            </li>
+            {items.map(item => (
+              <li key={String(item.id)}>
+                <img src={item.image_url} alt={item.title}/>
+                <span>{item.title}</span>
+              </li>
+            ))}
           </ul>
         </fieldset>
 
