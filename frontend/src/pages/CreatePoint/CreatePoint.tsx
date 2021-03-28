@@ -7,6 +7,7 @@ import {TileLayer, Marker, MapContainer, useMapEvents, useMap } from 'react-leaf
 import api from '../../services/api';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import DropZone from '../../components/DropZone';
 
 interface Item {
   id: number;
@@ -39,6 +40,8 @@ const CreatePoint: React.FC = () => {
     email: '',
     whatsapp: ''
   });
+
+  const [selectedFile, setSelectedFile] = useState<File>();
 
   useEffect(() => {
     async function getItems() {
@@ -135,18 +138,22 @@ const CreatePoint: React.FC = () => {
     const [latitude, longitude] = selectedPosition;
     const items = selectedItems.map(item => item.id);
 
-    const data = {
-      name,
-      email,
-      whatsapp,
-      uf,
-      city,
-      latitude,
-      longitude,
-      items
-    };
+    const dataForm = new FormData();
 
-    const response = await api.post('/points', data);
+    dataForm.append('name', name);
+    dataForm.append('email', email); 
+    dataForm.append('whatsapp', whatsapp);
+    dataForm.append('uf', uf);
+    dataForm.append('city', city); 
+    dataForm.append('latitude', String(latitude));
+    dataForm.append('longitude', String(longitude));
+    dataForm.append('items', items.join(','));
+
+    if(selectedFile) {
+      dataForm.append('image', selectedFile);
+    }
+    
+    const response = await api.post('/points', dataForm);
     
     if(response.data.id !== 0){
       toast.success('Ponto de coleta criado!');
@@ -168,6 +175,8 @@ const CreatePoint: React.FC = () => {
 
       <form onSubmit={handleSubmit}>
         <h1>Cadastro do ponto de coleta</h1>
+
+        <DropZone onFileUploaded={setSelectedFile}/>
 
         <fieldset>
           <legend>
